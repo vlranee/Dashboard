@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Dashboard</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="style.css" />
+
+  <script>
+    // Configure Tailwind with custom colors
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary:   { DEFAULT: '#3b82f6', light: '#93c5fd', dark: '#1d4ed8' },
+            secondary: { DEFAULT: '#7c3aed', light: '#c4b5fd', dark: '#4c1d95' },
+            accent:    { DEFAULT: '#10b981', light: '#6ee7b7', dark: '#065f46' },
+            warn:      { DEFAULT: '#f59e0b', light: '#fde68a', dark: '#92400e' },
+            surface:   '#f7f8fa',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-surface min-h-screen font-sans text-gray-800">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Logo / Icon -->
+        <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-gray-900 leading-tight">Sales Dashboard</h1>
+          <p class="text-xs text-gray-500">Analytics &amp; Performance Overview</p>
+        </div>
+      </div>
+      <!-- Data info badge -->
+      <span id="data-badge" class="hidden sm:inline-flex items-center gap-1.5 text-xs bg-accent/10 text-accent-dark border border-accent/20 rounded-full px-3 py-1 font-medium">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+        <span id="record-count">Loading…</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- ---- FILTERS ---- -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-5">
+      <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Filters</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="filter-group">
+          <label class="filter-label" for="filter-region">Region</label>
+          <select id="filter-region" class="filter-select">
+            <option value="All">All Regions</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-category">Product Category</label>
+          <select id="filter-category" class="filter-select">
+            <option value="All">All Categories</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-customer">Customer Type</label>
+          <select id="filter-customer" class="filter-select">
+            <option value="All">All Customers</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filter-channel">Sales Channel</label>
+          <select id="filter-channel" class="filter-select">
+            <option value="All">All Channels</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-3 flex items-center justify-end gap-2">
+        <button id="btn-reset" class="text-xs text-gray-500 hover:text-primary transition-colors px-3 py-1.5 rounded-lg border border-gray-200 hover:border-primary hover:bg-primary/5">
+          Reset Filters
+        </button>
+        <span id="filtered-count" class="text-xs text-gray-400"></span>
+      </div>
+    </section>
+
+    <!-- ---- KPI CARDS ---- -->
+    <section>
+      <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Key Performance Indicators</h2>
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="kpi-card border-l-primary">
+          <p class="kpi-label">Total Revenue</p>
+          <p class="kpi-value" id="kpi-revenue">—</p>
+          <p class="kpi-sub" id="kpi-revenue-sub"></p>
+        </div>
+        <div class="kpi-card border-l-secondary">
+          <p class="kpi-label">Total Transactions</p>
+          <p class="kpi-value" id="kpi-transactions">—</p>
+          <p class="kpi-sub" id="kpi-transactions-sub"></p>
+        </div>
+        <div class="kpi-card border-l-accent">
+          <p class="kpi-label">Total Quantity Sold</p>
+          <p class="kpi-value" id="kpi-quantity">—</p>
+          <p class="kpi-sub" id="kpi-quantity-sub"></p>
+        </div>
+        <div class="kpi-card border-l-warn">
+          <p class="kpi-label">Average Discount</p>
+          <p class="kpi-value" id="kpi-discount">—</p>
+          <p class="kpi-sub" id="kpi-discount-sub"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- CHARTS ROW 1: Sales Trend + Revenue per Region ---- -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="chart-card lg:col-span-2">
+        <h3 class="chart-title">Sales Trend (Monthly)</h3>
+        <div class="chart-wrapper"><canvas id="chart-trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-title">Revenue per Region</h3>
+        <div class="chart-wrapper"><canvas id="chart-region"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ---- CHARTS ROW 2: Category Revenue + Sales per Rep ---- -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="chart-card">
+        <h3 class="chart-title">Revenue per Product Category</h3>
+        <div class="chart-wrapper"><canvas id="chart-category"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-title">Sales per Sales Representative</h3>
+        <div class="chart-wrapper"><canvas id="chart-salesrep"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ---- CHARTS ROW 3: Customer Type + Payment Method + Sales Channel ---- -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="chart-card">
+        <h3 class="chart-title">Customer Type Distribution</h3>
+        <div class="chart-wrapper-sm"><canvas id="chart-customer"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-title">Payment Method Usage</h3>
+        <div class="chart-wrapper-sm"><canvas id="chart-payment"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-title">Sales Channel Distribution</h3>
+        <div class="chart-wrapper-sm"><canvas id="chart-channel"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ---- CHARTS ROW 4: Scatter + Top 10 ---- -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="chart-card">
+        <h3 class="chart-title">Discount vs Sales Amount</h3>
+        <p class="text-xs text-gray-400 mb-2">Each point represents one transaction</p>
+        <div class="chart-wrapper"><canvas id="chart-scatter"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3 class="chart-title">Top 10 Highest Sales Transactions</h3>
+        <div class="chart-wrapper"><canvas id="chart-top10"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ---- CHARTS ROW 5: Qty per Category ---- -->
+    <div class="grid grid-cols-1 gap-4">
+      <div class="chart-card">
+        <h3 class="chart-title">Quantity Sold per Category</h3>
+        <div class="chart-wrapper"><canvas id="chart-qty-category"></canvas></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 mt-4 border-t border-gray-200 text-center text-xs text-gray-400">
+    Sales Dashboard · Data sourced from <strong>200_sales_data.csv</strong> · Built with Chart.js &amp; Tailwind CSS
+  </footer>
+
+  <!-- Main script -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+/**
+ * style.css
+ * Complementary styles for the Sales Dashboard.
+ * Tailwind CSS handles most layout/spacing; this file adds:
+ *  - Reusable component classes (.kpi-card, .chart-card, etc.)
+ *  - Custom border-left colour helpers for KPI cards
+ *  - Chart wrapper sizing
+ *  - Filter control styling
+ *  - Smooth transitions & hover effects
+ *  - Scrollbar polish
+ */
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   KPI CARDS
+   ============================================================ */
+
+.kpi-card {
+  background:    #ffffff;
+  border:        1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding:       1.25rem 1.5rem;
+  border-left-width: 4px;
+  box-shadow:    0 1px 3px 0 rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.04);
+  transition:    transform .2s ease, box-shadow .2s ease;
+  position:      relative;
+  overflow:      hidden;
+}
+
+.kpi-card:hover {
+  transform:  translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(0,0,0,.10);
+}
+
+/* Coloured left border variants */
+.kpi-card.border-l-primary   { border-left-color: #3b82f6; }
+.kpi-card.border-l-secondary { border-left-color: #7c3aed; }
+.kpi-card.border-l-accent    { border-left-color: #10b981; }
+.kpi-card.border-l-warn      { border-left-color: #f59e0b; }
+
+.kpi-label {
+  font-size:   0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #6b7280;
+  margin-bottom: .35rem;
+}
+
+.kpi-value {
+  font-size:   1.75rem;
+  font-weight: 700;
+  color:       #111827;
+  line-height: 1.15;
+  margin-bottom: .2rem;
+}
+
+.kpi-sub {
+  font-size: .72rem;
+  color:     #9ca3af;
+}
+
+/* ============================================================
+   CHART CARDS
+   ============================================================ */
+
+.chart-card {
+  background:    #ffffff;
+  border:        1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding:       1.25rem 1.5rem;
+  box-shadow:    0 1px 3px 0 rgba(0,0,0,.06), 0 1px 2px -1px rgba(0,0,0,.04);
+  transition:    box-shadow .2s ease;
+}
+
+.chart-card:hover {
+  box-shadow: 0 6px 20px -4px rgba(0,0,0,.09);
+}
+
+.chart-title {
+  font-size:     .875rem;
+  font-weight:   600;
+  color:         #374151;
+  margin-bottom: 1rem;
+}
+
+/* Standard chart canvas wrapper */
+.chart-wrapper {
+  position: relative;
+  height:   280px;
+}
+
+/* Smaller wrapper for doughnut / pie charts */
+.chart-wrapper-sm {
+  position: relative;
+  height:   220px;
+}
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+
+.filter-group {
+  display:        flex;
+  flex-direction: column;
+  gap:            .3rem;
+}
+
+.filter-label {
+  font-size:   .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color:       #6b7280;
+}
+
+.filter-select {
+  width:         100%;
+  padding:       .45rem .75rem;
+  border:        1px solid #d1d5db;
+  border-radius: .6rem;
+  font-size:     .8rem;
+  color:         #374151;
+  background:    #f9fafb;
+  appearance:    none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .65rem center;
+  padding-right: 2rem;
+  cursor:        pointer;
+  transition:    border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.filter-select:hover {
+  border-color: #3b82f6;
+  background-color: #fff;
+}
+
+.filter-select:focus {
+  outline:    none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+  background-color: #fff;
+}
+
+/* ============================================================
+   SCROLLBAR (Webkit)
+   ============================================================ */
+
+::-webkit-scrollbar         { width: 6px; height: 6px; }
+::-webkit-scrollbar-track   { background: #f1f5f9; border-radius: 3px; }
+::-webkit-scrollbar-thumb   { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ============================================================
+   RESPONSIVE TWEAKS
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .kpi-value { font-size: 1.35rem; }
+  .chart-wrapper    { height: 220px; }
+  .chart-wrapper-sm { height: 180px; }
+}
